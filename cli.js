@@ -3,6 +3,7 @@
 var path = require('path')
 var fs = require('fs')
 var posthtml = require('posthtml')
+var posthtmlrc = require('posthtml-load-config')
 var globby = require('globby')
 var pathExists = require('path-exists')
 var argv = require('yargs')
@@ -42,7 +43,7 @@ function processing(file, output) {
   // config
   var config = {}
 
-  // create config extends for post-load-plugins
+  // create config extends for posthtml-load-config
   if (argv.use) {
     argv.use.forEach(function (plugin) {
       config[plugin] = argv[plugin] || {}
@@ -50,15 +51,21 @@ function processing(file, output) {
   }
 
   if (argv.config) {
-    config = Object.assign(require(path.resolve(argv.config)), config)
+    var configFile = require(path.resolve(argv.config))
+    if (typeof configFile === 'function') {
+      configFile = configFile({ext: path.extname(file)}).plugins
+    }
+    config = Object.assign({}, configFile, config)
   }
 
   // processing
-  posthtml(require('post-load-plugins')(config))
-    .process(html)
-    .then(function (result) {
-      fs.writeFileSync(output, result.html)
-    })
+  return posthtmlrc({ext: path.extname(file)}).then(function (config) {
+    posthtml(config.plugins)
+      .process(html)
+      .then(function (result) {
+        fs.writeFileSync(output, result.html)
+      })
+  })
 }
 
 function isFile(outputPath) {

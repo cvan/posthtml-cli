@@ -39,8 +39,8 @@
   "dependencies": {
     "globby": "^6.1.0",
     "path-exists": "^3.0.0",
-    "post-load-plugins": "0.0.5",
     "posthtml": "^0.9.1",
+    "posthtml-load-config": "^1.0.0",
     "yargs": "^6.5.0"
   },
   "devDependencies": {
